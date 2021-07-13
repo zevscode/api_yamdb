@@ -5,7 +5,7 @@ from django.utils.crypto import get_random_string
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import UserRegistration
+from .models import UserRegistration, Review, Comment
 
 User = get_user_model()
 
@@ -58,3 +58,26 @@ class TokenObtainSerializer(serializers.Serializer):
                 'token': str(token.access_token),
             }
         raise serializers.ValidationError('Wrong Confirmation Code')
+
+
+class ReviewSerializer(serializers.Serializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+
+    class Meta:
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        read_only_fields = ('title',)
+        model = Review
+
+
+class CommentSerializer(serializers.Serializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+
+    class Meta:
+        fields = ('id', 'text', 'author', 'pub_date')
+        model = Comment
