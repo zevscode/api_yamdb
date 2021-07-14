@@ -12,14 +12,14 @@ from rest_framework.filters import SearchFilter
 
 from .filters import TitlesFilter
 from .mixins import CLDViewSet
-from .models import Category, Genres, Titles
+from .models import Category, Genres, Titles, Review, Comment
 
 from .permissions import IsModerator, IsOwner, IsSuperUser, IsSuperUserOrReadOnly
-from .models import Review, Comment, Title
-from .permissions import IsModerator, IsOwner, IsSuperUser
-from .serializers import (TokenObtainSerializer, UserRegistrationSerializer,
-                          UserSerializer, CategorySerializer, GenresSerializer, TitlesSerializer, TitlesListSerializer)
-                           CommentSerializer, ReviewSerializer)
+from .serializers import (
+    TokenObtainSerializer, UserRegistrationSerializer,
+    UserSerializer, CategorySerializer, GenresSerializer,
+    TitlesSerializer, TitlesListSerializer,
+    CommentSerializer, ReviewSerializer)
 
 User = get_user_model()
 
@@ -45,7 +45,7 @@ class UsersViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
 
 class UserRegistrationView(CreateAPIView):
     serializer_class = UserRegistrationSerializer
@@ -113,7 +113,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title = get_object_or_404(
-            Title, pk=self.kwargs['title_id']
+            Titles, pk=self.kwargs['title_id']
         )
         return title.reviews.all()
 
@@ -121,7 +121,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(
             author=self.request.user,
             title=get_object_or_404(
-                Title, pk=self.kwargs.get('title_id'))
+                Titles, pk=self.kwargs.get('title_id'))
         )
 
 
