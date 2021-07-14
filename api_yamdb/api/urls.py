@@ -3,12 +3,14 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     TokenObtainView, UserRegistrationView,
-    UsersViewSet, CategoryViewSet
+    UsersViewSet, CategoryViewSet, GenresViewSet, TitlesViewSet,
 )
 
 router = DefaultRouter()
 router.register('users', UsersViewSet)
 router.register('categories', CategoryViewSet)
+router.register('genres', GenresViewSet)
+router.register('titles', TitlesViewSet)
 
 
 urlpatterns = [
