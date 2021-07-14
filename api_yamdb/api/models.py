@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.text import slugify
 
 
 class User(AbstractUser):
@@ -24,13 +25,49 @@ class UserRegistration(models.Model):
     confirmation_code = models.CharField(max_length=16)
 
 
-# Заглушка для работоспособности модели Rewiew.
-# Потом нужно заменить нормальной моделью.
-class Title(models.Model):
-    title = models.CharField(max_length=200)
+class Category(models.Model):
+    name = models.CharField('Имя категории', max_length=200)
+    slug = models.SlugField(unique=True)
 
     def __str__(self):
-        return self.title
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)[:100]
+        super().save(*args, **kwargs)
+
+
+class Genres(models.Model):
+    name = models.CharField('Нзавание жанра', max_length=200)
+    slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.slug
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)[:100]
+        super().save(*args, **kwargs)
+
+
+class Titles(models.Model):
+    name = models.CharField('Название', max_length=258)
+    year = models.IntegerField('Год выпуска', default=0)
+    description = models.TextField('Описание', max_length=258)
+    category = models.ForeignKey(
+        Category, verbose_name='Категории',
+        on_delete=models.SET_NULL, null=True
+    )
+    genre = models.ManyToManyField(Genres, through='GenresTitles')
+
+
+class GenresTitles(models.Model):
+    genres = models.ForeignKey(Genres, on_delete=models.SET_NULL, null=True)
+    titles = models.ForeignKey(Titles, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f'{self.genres} {self.titles}'
 
 
 class Review(models.Model):
@@ -58,7 +95,7 @@ class Review(models.Model):
         related_name="reviews_authors"
     )
     title = models.ForeignKey(
-        Title,
+        Titles,
         on_delete=models.CASCADE,
         related_name="reviews"
     )
