@@ -1,5 +1,3 @@
-from abc import ABC
-
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -7,7 +5,7 @@ from django.utils.crypto import get_random_string
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import UserRegistration, Category, Genres, Titles, GenresTitles
+from .models import UserRegistration, Category, Genres, Titles, GenresTitles, Review, Comment
 
 User = get_user_model()
 
@@ -55,7 +53,6 @@ class TokenObtainSerializer(serializers.Serializer):
             if created:
                 user.username = email
                 user.save()
-
             token = RefreshToken.for_user(user)
             return {
                 'token': str(token.access_token),
@@ -137,3 +134,26 @@ class TitlesListSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'description', 'genre', 'category')
         read_only_fields = ('id',)
         model = Titles
+
+
+class ReviewSerializer(serializers.Serializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+
+    class Meta:
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        read_only_fields = ('title',)
+        model = Review
+
+
+class CommentSerializer(serializers.Serializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+
+    class Meta:
+        fields = ('id', 'text', 'author', 'pub_date')
+        model = Comment

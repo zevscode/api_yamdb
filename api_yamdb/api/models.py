@@ -68,3 +68,70 @@ class GenresTitles(models.Model):
 
     def __str__(self):
         return f'{self.genres} {self.titles}'
+
+
+class Review(models.Model):
+    RATING_RANGE = (
+        ('1', '1'),
+        ('2', '2'),
+        ('3', '3'),
+        ('4', '4'),
+        ('5', '5'),
+        ('6', '6'),
+        ('7', '7'),
+        ('8', '8'),
+        ('9', '9'),
+        ('10', '10'),
+    )
+
+    text = models.TextField()
+    pub_date = models.DateTimeField(
+        "date published",
+        auto_now_add=True
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews_authors"
+    )
+    title = models.ForeignKey(
+        Titles,
+        on_delete=models.CASCADE,
+        related_name="reviews"
+    )
+
+    score = models.IntegerField(
+        choices=RATING_RANGE,
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return self.text[:15]
+
+    class Meta:
+        ordering = ['-pub_date']
+
+
+class Comment(models.Model):
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='author_comments'
+    )
+    text = models.TextField()
+    pub_date = models.DateTimeField(
+        'date published',
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.text[:15]
+
+    class Meta:
+        ordering = ['-pub_date']
