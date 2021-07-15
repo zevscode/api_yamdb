@@ -148,6 +148,15 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ('title',)
         model = Review
 
+    def validate(self, data):
+        text = data.get('text')
+        if text == '111':
+            raise serializers.ValidationError(
+                self.author
+            )
+        return data
+
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
