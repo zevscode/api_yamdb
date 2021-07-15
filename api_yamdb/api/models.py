@@ -17,7 +17,13 @@ class User(AbstractUser):
     )
     bio = models.TextField(blank=True)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ('role',)
+    REQUIRED_FIELDS = ('username', 'role')
+
+    class Meta:
+        ordering = ['pk']
+
+    def __str__(self):
+        return f'{self.email}'
 
 
 class UserRegistration(models.Model):
