@@ -78,16 +78,16 @@ class GenresTitles(models.Model):
 
 class Review(models.Model):
     RATING_RANGE = (
-        ('1', '1'),
-        ('2', '2'),
-        ('3', '3'),
-        ('4', '4'),
-        ('5', '5'),
-        ('6', '6'),
-        ('7', '7'),
-        ('8', '8'),
-        ('9', '9'),
-        ('10', '10'),
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+        (5, 5),
+        (6, 6),
+        (7, 7),
+        (8, 8),
+        (9, 9),
+        (10, 10),
     )
 
     text = models.TextField()
@@ -118,12 +118,20 @@ class Review(models.Model):
     class Meta:
         ordering = ['-pub_date']
 
+        # Работает только на уровне модели
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         fields=['author', 'title'],
+        #         name='unique_review'
+        #     )
+        # ]
+
 
 class Comment(models.Model):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name='comments'
     )
     author = models.ForeignKey(
         User,

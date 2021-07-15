@@ -15,7 +15,7 @@ class IsModerator(permissions.BasePermission):
 
 class IsOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        return obj.owner == request.user
+        return obj.author == request.user
 
 
 class IsSuperUserOrReadOnly(permissions.BasePermission):
@@ -26,4 +26,13 @@ class IsSuperUserOrReadOnly(permissions.BasePermission):
         return not (
                 request.user.is_anonymous
                 and request.method not in permissions.SAFE_METHODS
+        )
+
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.method in permissions.SAFE_METHODS
+            or obj.author == request.user
+            or request.user.role == 'moderator'
         )

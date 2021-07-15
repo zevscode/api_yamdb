@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.validators import UniqueTogetherValidator
 
 from .models import UserRegistration, Category, Genres, Titles, GenresTitles, Review, Comment
 
@@ -136,7 +137,7 @@ class TitlesListSerializer(serializers.ModelSerializer):
         model = Titles
 
 
-class ReviewSerializer(serializers.Serializer):
+class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username'
@@ -148,7 +149,7 @@ class ReviewSerializer(serializers.Serializer):
         model = Review
 
 
-class CommentSerializer(serializers.Serializer):
+class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username'

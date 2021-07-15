@@ -14,7 +14,7 @@ from .filters import TitlesFilter
 from .mixins import CLDViewSet
 from .models import Category, Genres, Titles, Review, Comment
 
-from .permissions import IsModerator, IsOwner, IsSuperUser, IsSuperUserOrReadOnly
+from .permissions import IsModerator, IsOwner, IsSuperUser, IsSuperUserOrReadOnly, IsOwnerOrReadOnly
 from .serializers import (
     TokenObtainSerializer, UserRegistrationSerializer,
     UserSerializer, CategorySerializer, GenresSerializer,
@@ -110,6 +110,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = PageNumberPagination
+    permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
         title = get_object_or_404(
@@ -128,6 +129,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = PageNumberPagination
+    permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
         review = get_object_or_404(
