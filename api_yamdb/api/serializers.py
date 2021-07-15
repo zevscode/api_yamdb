@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.validators import UniqueTogetherValidator
 
 from .models import UserRegistration, Category, Genres, Titles, GenresTitles, Review, Comment
@@ -54,7 +54,7 @@ class TokenObtainSerializer(serializers.Serializer):
             if created:
                 user.username = email
                 user.save()
-            token = AccessToken.for_user(user)
+            token = RefreshToken.for_user(user)
             return {
                 'token': str(token.access_token),
             }
