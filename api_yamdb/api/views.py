@@ -12,7 +12,7 @@ from rest_framework.filters import SearchFilter
 
 from .filters import TitlesFilter
 from .mixins import CLDViewSet
-from .models import Category, Genres, Titles, Review, Comment
+from .models import Category, Genres, Titles, Review, Comment, Rating
 
 from .permissions import IsModerator, IsOwner, IsSuperUser, IsSuperUserOrReadOnly, IsOwnerOrReadOnly
 from .serializers import (
@@ -124,13 +124,25 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         user = get_object_or_404(User, username=self.request.user.username)
+        title = get_object_or_404(
+            Titles, pk=self.kwargs['title_id']
+        )
+
         if Review.objects.filter(
             author__username=user.username,
             title__pk=self.kwargs['title_id']
         ).exists():
             raise serializers.ValidationError(
-                'Вы уже написали отзыв на это произведение.'
+                'Вы уже оставили свой отзыв.'
             )
+
+        if serializer.validated_data['score'] is not None:
+            Rating.objects.create(
+                score=serializer.validated_data['score'],
+                author=user,
+                title=title
+            )
+
         serializer.save(
             author=user,
             title=get_object_or_404(
