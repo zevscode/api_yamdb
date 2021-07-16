@@ -19,6 +19,12 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username', 'role')
 
+    class Meta:
+        ordering = ['pk']
+
+    def __str__(self):
+        return f'{self.email}'
+
 
 class UserRegistration(models.Model):
     email = models.EmailField(unique=True)
