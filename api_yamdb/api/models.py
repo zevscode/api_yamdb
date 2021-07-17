@@ -67,6 +67,11 @@ class Titles(models.Model):
     )
     genre = models.ManyToManyField(Genres, through='GenresTitles')
 
+    rating = models.FloatField(
+        blank=True,
+        null=True
+    )
+
 
 class GenresTitles(models.Model):
     genres = models.ForeignKey(Genres, on_delete=models.SET_NULL, null=True)
@@ -149,3 +154,20 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['-pub_date']
+
+
+class Rating(models.Model):
+    score = models.IntegerField(
+        blank=True,
+        null=True
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="rating_authors"
+    )
+
+    title = models.ForeignKey(
+        Titles,
+        on_delete=models.CASCADE,
+        related_name='title')

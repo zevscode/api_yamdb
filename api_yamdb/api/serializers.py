@@ -2,11 +2,12 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
+from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.validators import UniqueTogetherValidator
 
-from .models import UserRegistration, Category, Genres, Titles, GenresTitles, Review, Comment
+from .models import UserRegistration, Category, Genres, Titles, GenresTitles, Review, Comment, Rating
 
 User = get_user_model()
 
@@ -98,7 +99,7 @@ class TitlesSerializer(serializers.ModelSerializer):
     category = SlugSerializer(queryset=Category.objects.all())
 
     class Meta:
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category',)
         read_only_fields = ('id',)
         model = Titles
 
@@ -130,11 +131,16 @@ class TitlesSerializer(serializers.ModelSerializer):
 class TitlesListSerializer(serializers.ModelSerializer):
     genre = GenresSerializer(many=True)
     category = CategorySerializer()
+    rating = serializers.SerializerMethodField('get_rating')
 
     class Meta:
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
-        read_only_fields = ('id',)
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category', 'rating')
+        read_only_fields = ('id', 'rating',)
         model = Titles
+
+    def get_rating(self, obj):
+        ratings = Rating.objects.filter(title=obj.id).aggregate(Avg('score'))
+        return ratings['score__avg']
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -148,15 +154,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ('title',)
         model = Review
 
-    def validate(self, data):
-        text = data.get('text')
-        if text == '111':
-            raise serializers.ValidationError(
-                self.author
-            )
-        return data
-
-
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
@@ -167,3 +164,6 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
+
+
+

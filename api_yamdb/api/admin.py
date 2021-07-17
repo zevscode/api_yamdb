@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Category, Comment, Genres, Review, Titles, UserRegistration
+from .models import Category, Comment, Genres, Review, Titles, UserRegistration, Rating
 
 User = get_user_model()
 
@@ -43,4 +43,5 @@ class ExtendedUserAdmin(UserAdmin):
 
 admin.site.register(Review)
 admin.site.register(Comment)
+admin.site.register(Rating)
 admin.site.register(User, ExtendedUserAdmin)
