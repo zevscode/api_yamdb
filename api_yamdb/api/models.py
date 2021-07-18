@@ -123,14 +123,6 @@ class Review(models.Model):
     class Meta:
         ordering = ['-pub_date']
 
-        # Работает только на уровне модели
-        # constraints = [
-        #     models.UniqueConstraint(
-        #         fields=['author', 'title'],
-        #         name='unique_review'
-        #     )
-        # ]
-
 
 class Comment(models.Model):
     review = models.ForeignKey(

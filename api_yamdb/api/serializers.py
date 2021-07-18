@@ -139,7 +139,7 @@ class TitlesListSerializer(serializers.ModelSerializer):
         model = Titles
 
     def get_rating(self, obj):
-        ratings = Rating.objects.filter(title=obj.id).aggregate(Avg('score'))
+        ratings = Review.objects.filter(title_id=obj.id).aggregate(Avg('score'))
         return ratings['score__avg']
 
 
