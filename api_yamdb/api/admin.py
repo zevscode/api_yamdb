@@ -2,9 +2,13 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Category, Comment, Genres, Review, Titles, UserRegistration, Rating
+from .models import (
+    Category, Comment, Genres, Review,
+    Titles, UserRegistration, Rating
+)
 
 User = get_user_model()
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -41,7 +45,13 @@ class ExtendedUserAdmin(UserAdmin):
     )
 
 
-admin.site.register(Review)
+@admin.register(Rating)
+class RatingAdmin(admin.ModelAdmin):
+    list_display = ('score', 'author', 'title')
+    list_filter = ('title',)
+    empty_value_display = '-пусто-'
+
+
 admin.site.register(Comment)
-admin.site.register(Rating)
+admin.site.register(Review)
 admin.site.register(User, ExtendedUserAdmin)

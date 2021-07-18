@@ -4,7 +4,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView
-from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from rest_framework.pagination import (
+    PageNumberPagination, LimitOffsetPagination
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -12,9 +14,9 @@ from rest_framework.filters import SearchFilter
 
 from .filters import TitlesFilter
 from .mixins import CLDViewSet
-from .models import Category, Genres, Titles, Review, Comment, Rating
+from .models import Category, Genres, Titles, Review, Rating
 
-from .permissions import IsModerator, IsOwner, IsSuperUser, IsSuperUserOrReadOnly, IsOwnerOrReadOnly
+from .permissions import IsSuperUser, IsSuperUserOrReadOnly, IsOwnerOrReadOnly
 from .serializers import (
     TokenObtainSerializer, UserRegistrationSerializer,
     UserSerializer, CategorySerializer, GenresSerializer,
@@ -115,7 +117,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
         IsOwnerOrReadOnly
     ]
 
-
     def get_queryset(self):
         title = get_object_or_404(
             Titles, pk=self.kwargs['title_id']
@@ -129,8 +130,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         )
 
         if Review.objects.filter(
-            author__username=user.username,
-            title__pk=self.kwargs['title_id']
+                author__username=user.username,
+                title__pk=self.kwargs['title_id']
         ).exists():
             raise serializers.ValidationError(
                 'Вы уже оставили свой отзыв.'

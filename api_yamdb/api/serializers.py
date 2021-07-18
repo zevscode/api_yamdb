@@ -5,9 +5,11 @@ from django.utils.crypto import get_random_string
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.validators import UniqueTogetherValidator
 
-from .models import UserRegistration, Category, Genres, Titles, GenresTitles, Review, Comment, Rating
+from .models import (
+    UserRegistration, Category, Genres,
+    Titles, GenresTitles, Review, Comment
+)
 
 User = get_user_model()
 
@@ -122,7 +124,9 @@ class TitlesSerializer(serializers.ModelSerializer):
         )
         instance.name = validated_data.get('name', instance.name)
         instance.year = validated_data.get('year', instance.year)
-        instance.description = validated_data.get('description', instance.description)
+        instance.description = validated_data.get(
+            'description', instance.description
+        )
         instance.category = category
         instance.save()
         return instance
@@ -134,12 +138,16 @@ class TitlesListSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField('get_rating')
 
     class Meta:
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category', 'rating')
+        fields = (
+            'id', 'name', 'year', 'description', 'genre', 'category', 'rating'
+        )
         read_only_fields = ('id', 'rating',)
         model = Titles
 
     def get_rating(self, obj):
-        ratings = Review.objects.filter(title_id=obj.id).aggregate(Avg('score'))
+        ratings = Review.objects.filter(
+            title_id=obj.id
+        ).aggregate(Avg('score'))
         return ratings['score__avg']
 
 
@@ -164,6 +172,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
-
-
-
