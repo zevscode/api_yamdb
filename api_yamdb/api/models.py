@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
 
@@ -67,11 +68,6 @@ class Titles(models.Model):
     )
     genre = models.ManyToManyField(Genres, through='GenresTitles')
 
-    rating = models.FloatField(
-        blank=True,
-        null=True
-    )
-
 
 class GenresTitles(models.Model):
     genres = models.ForeignKey(Genres, on_delete=models.SET_NULL, null=True)
@@ -82,28 +78,16 @@ class GenresTitles(models.Model):
 
 
 class Review(models.Model):
-    RATING_RANGE = (
-        (1, 1),
-        (2, 2),
-        (3, 3),
-        (4, 4),
-        (5, 5),
-        (6, 6),
-        (7, 7),
-        (8, 8),
-        (9, 9),
-        (10, 10),
-    )
-
     text = models.TextField()
     pub_date = models.DateTimeField(
         "date published",
-        auto_now_add=True
+        auto_now_add=True,
+        db_index=True
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="reviews_authors"
+        related_name="reviews"
     )
     title = models.ForeignKey(
         Titles,
@@ -112,16 +96,19 @@ class Review(models.Model):
     )
 
     score = models.IntegerField(
-        choices=RATING_RANGE,
         blank=True,
-        null=True
+        null=True,
+        validators=[
+            MaxValueValidator(10),
+            MinValueValidator(1)
+        ]
     )
-
-    def __str__(self):
-        return self.text[:15]
 
     class Meta:
         ordering = ['-pub_date']
+
+    def __str__(self):
+        return self.text[:15]
 
 
 class Comment(models.Model):
@@ -138,28 +125,12 @@ class Comment(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField(
         'date published',
-        auto_now_add=True
+        auto_now_add=True,
+        db_index=True
     )
-
-    def __str__(self):
-        return self.text[:15]
 
     class Meta:
         ordering = ['-pub_date']
 
-
-class Rating(models.Model):
-    score = models.IntegerField(
-        blank=True,
-        null=True
-    )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="rating_authors"
-    )
-
-    title = models.ForeignKey(
-        Titles,
-        on_delete=models.CASCADE,
-        related_name='title')
+    def __str__(self):
+        return self.text[:15]
