@@ -13,6 +13,7 @@ from .models import (
 
 User = get_user_model()
 
+
 class RoleField(serializers.ChoiceField):
     def to_representation(self, value):
         return self._choices[value]

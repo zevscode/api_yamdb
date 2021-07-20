@@ -35,7 +35,7 @@ class User(AbstractUser):
     def is_administrator(self):
         if self.role == self.ADMINISTRATOR or self.is_superuser:
             return True
-        return False        
+        return False
 
     @property
     def is_moderator(self):
