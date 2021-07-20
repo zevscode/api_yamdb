@@ -3,8 +3,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 
 from .models import (
-    Category, Comment, Genres, Review,
-    Titles, UserRegistration, Rating
+    Category, Comment, Genre, Review,
+    Title, UserRegistration
 )
 
 User = get_user_model()
@@ -17,15 +17,15 @@ class CategoryAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Genres)
-class GenresAdmin(admin.ModelAdmin):
+@admin.register(Genre)
+class GenreAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'slug')
     search_fields = ('name',)
     empty_value_display = '-пусто-'
 
 
-@admin.register(Titles)
-class TitlesAdmin(admin.ModelAdmin):
+@admin.register(Title)
+class TitleAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'year', 'description')
     search_fields = ('name',)
     empty_value_display = '-пусто-'
@@ -43,13 +43,6 @@ class ExtendedUserAdmin(UserAdmin):
     fieldsets = (
         *UserAdmin.fieldsets, ('Additional', {'fields': ('role', 'bio')})
     )
-
-
-@admin.register(Rating)
-class RatingAdmin(admin.ModelAdmin):
-    list_display = ('score', 'author', 'title')
-    list_filter = ('title',)
-    empty_value_display = '-пусто-'
 
 
 admin.site.register(Comment)

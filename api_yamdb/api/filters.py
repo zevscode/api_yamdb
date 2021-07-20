@@ -1,9 +1,9 @@
 from django_filters import rest_framework as filters
 
-from .models import Titles
+from .models import Title
 
 
-class TitlesFilter(filters.FilterSet):
+class TitleFilter(filters.FilterSet):
     name = filters.CharFilter(
         field_name='name', lookup_expr='icontains'
     )
@@ -12,5 +12,5 @@ class TitlesFilter(filters.FilterSet):
     year = filters.NumberFilter(field_name='year')
 
     class Meta:
-        model = Titles
+        model = Title
         fields = ['name', 'genre', 'category', 'year']

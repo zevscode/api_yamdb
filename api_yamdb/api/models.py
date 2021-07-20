@@ -1,6 +1,9 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
+
+from .validators import validate_year
 
 
 class User(AbstractUser):
@@ -48,10 +51,18 @@ class UserRegistration(models.Model):
 
 class Category(models.Model):
     name = models.CharField('Имя категории', max_length=200)
+    # Хотел бы уточнить
+    # разве verbose_name не добавляют если есть  ForeignKey
+    # (то есть он является обязательным
+    # если создаем связь с другой моделью)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -59,84 +70,76 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
 
-class Genres(models.Model):
+class Genre(models.Model):
     name = models.CharField('Нзавание жанра', max_length=200)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
         return self.slug
 
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)[:100]
         super().save(*args, **kwargs)
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.CharField('Название', max_length=258)
-    year = models.IntegerField('Год выпуска', default=0)
+    year = models.IntegerField(
+        'Год выпуска', default=0, validators=[validate_year]
+    )
     description = models.TextField('Описание', max_length=258)
     category = models.ForeignKey(
         Category, verbose_name='Категории',
-        on_delete=models.SET_NULL, null=True
+        to_field='slug', on_delete=models.SET_NULL, null=True
     )
-    genre = models.ManyToManyField(Genres, through='GenresTitles')
-
-    rating = models.FloatField(
-        blank=True,
-        null=True
-    )
+    genre = models.ManyToManyField(Genre, through='GenreTitle')
 
 
-class GenresTitles(models.Model):
-    genres = models.ForeignKey(Genres, on_delete=models.SET_NULL, null=True)
-    titles = models.ForeignKey(Titles, on_delete=models.SET_NULL, null=True)
+class GenreTitle(models.Model):
+    genres = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True)
+    titles = models.ForeignKey(Title, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f'{self.genres} {self.titles}'
 
 
 class Review(models.Model):
-    RATING_RANGE = (
-        (1, 1),
-        (2, 2),
-        (3, 3),
-        (4, 4),
-        (5, 5),
-        (6, 6),
-        (7, 7),
-        (8, 8),
-        (9, 9),
-        (10, 10),
-    )
-
     text = models.TextField()
     pub_date = models.DateTimeField(
         "date published",
-        auto_now_add=True
+        auto_now_add=True,
+        db_index=True
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="reviews_authors"
+        related_name="reviews"
     )
     title = models.ForeignKey(
-        Titles,
+        Title,
         on_delete=models.CASCADE,
         related_name="reviews"
     )
 
     score = models.IntegerField(
-        choices=RATING_RANGE,
         blank=True,
-        null=True
+        null=True,
+        validators=[
+            MaxValueValidator(10),
+            MinValueValidator(1)
+        ]
     )
-
-    def __str__(self):
-        return self.text[:15]
 
     class Meta:
         ordering = ['-pub_date']
+
+    def __str__(self):
+        return self.text[:15]
 
 
 class Comment(models.Model):
@@ -153,28 +156,12 @@ class Comment(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField(
         'date published',
-        auto_now_add=True
+        auto_now_add=True,
+        db_index=True
     )
-
-    def __str__(self):
-        return self.text[:15]
 
     class Meta:
         ordering = ['-pub_date']
 
-
-class Rating(models.Model):
-    score = models.IntegerField(
-        blank=True,
-        null=True
-    )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="rating_authors"
-    )
-
-    title = models.ForeignKey(
-        Titles,
-        on_delete=models.CASCADE,
-        related_name='title')
+    def __str__(self):
+        return self.text[:15]
