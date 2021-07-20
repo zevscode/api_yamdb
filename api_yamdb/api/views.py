@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets, permissions, serializers
+from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView
 from rest_framework.pagination import (
@@ -13,15 +13,15 @@ from rest_framework.response import Response
 
 from rest_framework.filters import SearchFilter
 
-from .filters import TitlesFilter
+from .filters import TitleFilter
 from .mixins import CLDViewSet
-from .models import Category, Genres, Titles, Review
+from .models import Category, Genre, Title, Review
 
 from .permissions import IsSuperUser, IsSuperUserOrReadOnly, IsOwnerOrReadOnly
 from .serializers import (
     TokenObtainSerializer, UserRegistrationSerializer,
     UserSerializer, CategorySerializer, GenresSerializer,
-    TitlesSerializer, TitlesListSerializer,
+    TitleSerializer, TitlesListSerializer,
     CommentSerializer, ReviewSerializer)
 
 User = get_user_model()
@@ -86,7 +86,7 @@ class CategoryViewSet(CLDViewSet):
 
 class GenresViewSet(CLDViewSet):
     serializer_class = GenresSerializer
-    queryset = Genres.objects.all()
+    queryset = Genre.objects.all()
     lookup_url_kwarg = 'slug'
     lookup_field = 'slug'
     permission_classes = (IsSuperUserOrReadOnly,)
@@ -96,21 +96,21 @@ class GenresViewSet(CLDViewSet):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    serializer_class = TitlesSerializer
-    queryset = Titles.objects.all()
+    serializer_class = TitleSerializer
+    queryset = Title.objects.all()
     lookup_url_kwarg = 'titles_id'
     permission_classes = (IsSuperUserOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_class = TitlesFilter
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return TitlesListSerializer
-        return TitlesSerializer
+        return TitleSerializer
 
     def get_queryset(self):
-        return Titles.objects.annotate(
+        return Title.objects.annotate(
             rating=Avg('reviews__score'))
 
 
@@ -124,7 +124,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title = get_object_or_404(
-            Titles, pk=self.kwargs['title_id']
+            Title, pk=self.kwargs['title_id']
         )
         return title.reviews.all()
 
@@ -134,7 +134,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(
             author=user,
             title=get_object_or_404(
-                Titles, pk=self.kwargs.get('title_id'))
+                Title, pk=self.kwargs.get('title_id'))
         )
 
 

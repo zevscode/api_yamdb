@@ -3,6 +3,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
 
+from .validators import validate_year
+
 
 class User(AbstractUser):
     USER_ROLES = [
@@ -34,10 +36,18 @@ class UserRegistration(models.Model):
 
 class Category(models.Model):
     name = models.CharField('Имя категории', max_length=200)
+    # Хотел бы уточнить
+    # разве verbose_name не добавляют если есть  ForeignKey
+    # (то есть он является обязательным
+    # если создаем связь с другой моделью)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -45,33 +55,39 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
 
-class Genres(models.Model):
+class Genre(models.Model):
     name = models.CharField('Нзавание жанра', max_length=200)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
         return self.slug
 
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)[:100]
         super().save(*args, **kwargs)
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.CharField('Название', max_length=258)
-    year = models.IntegerField('Год выпуска', default=0)
+    year = models.IntegerField(
+        'Год выпуска', default=0, validators=[validate_year]
+    )
     description = models.TextField('Описание', max_length=258)
     category = models.ForeignKey(
         Category, verbose_name='Категории',
-        on_delete=models.SET_NULL, null=True
+        to_field='slug', on_delete=models.SET_NULL, null=True
     )
-    genre = models.ManyToManyField(Genres, through='GenresTitles')
+    genre = models.ManyToManyField(Genre, through='GenreTitle')
 
 
-class GenresTitles(models.Model):
-    genres = models.ForeignKey(Genres, on_delete=models.SET_NULL, null=True)
-    titles = models.ForeignKey(Titles, on_delete=models.SET_NULL, null=True)
+class GenreTitle(models.Model):
+    genres = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True)
+    titles = models.ForeignKey(Title, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f'{self.genres} {self.titles}'
@@ -90,7 +106,7 @@ class Review(models.Model):
         related_name="reviews"
     )
     title = models.ForeignKey(
-        Titles,
+        Title,
         on_delete=models.CASCADE,
         related_name="reviews"
     )
