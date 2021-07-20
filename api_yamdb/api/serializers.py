@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
-from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -135,7 +134,7 @@ class TitlesSerializer(serializers.ModelSerializer):
 class TitlesListSerializer(serializers.ModelSerializer):
     genre = GenresSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.SerializerMethodField('get_rating')
+    rating = serializers.FloatField()
 
     class Meta:
         fields = (
@@ -143,12 +142,6 @@ class TitlesListSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('id', 'rating',)
         model = Titles
-
-    def get_rating(self, obj):
-        ratings = Review.objects.filter(
-            title_id=obj.id
-        ).aggregate(Avg('score'))
-        return ratings['score__avg']
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -158,9 +151,23 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = '__all__'
         read_only_fields = ('title',)
         model = Review
+
+    def validate(self, data):
+        my_view = self.context['view']
+        title_id = my_view.kwargs.get('title_id')
+        user = self.context['request'].user
+
+        if self.context['request'].method == 'POST' and Review.objects.filter(
+                author__username=user.username,
+                title__id=title_id
+        ).exists():
+            raise serializers.ValidationError(
+                'Вы уже оставили свой отзыв.'
+            )
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):

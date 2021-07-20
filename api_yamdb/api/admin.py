@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 
 from .models import (
     Category, Comment, Genres, Review,
-    Titles, UserRegistration, Rating
+    Titles, UserRegistration
 )
 
 User = get_user_model()
@@ -43,13 +43,6 @@ class ExtendedUserAdmin(UserAdmin):
     fieldsets = (
         *UserAdmin.fieldsets, ('Additional', {'fields': ('role', 'bio')})
     )
-
-
-@admin.register(Rating)
-class RatingAdmin(admin.ModelAdmin):
-    list_display = ('score', 'author', 'title')
-    list_filter = ('title',)
-    empty_value_display = '-пусто-'
 
 
 admin.site.register(Comment)
