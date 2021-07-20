@@ -6,8 +6,8 @@ from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import (
-    UserRegistration, Category, Genres,
-    Titles, GenresTitles, Review, Comment
+    UserRegistration, Category, Genre,
+    Title, Review, Comment
 )
 
 User = get_user_model()
@@ -65,70 +65,28 @@ class TokenObtainSerializer(serializers.Serializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('name', 'slug',)
+        exclude = ('id',)
         model = Category
 
 
 class GenresSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('name', 'slug',)
-        model = Genres
+        exclude = ('id',)
+        model = Genre
 
 
-class SlugSerializer(serializers.RelatedField):
-
-    def to_internal_value(self, data):
-        return data
-
-    def to_representation(self, instance):
-        return instance.slug
-
-
-def genre_get_or_create(titles, genres):
-    for genre in genres:
-        current_genres, status = Genres.objects.get_or_create(
-            slug=genre,
-        )
-        GenresTitles.objects.get_or_create(
-            titles=titles, genres=current_genres
-        )
-    return genres
-
-
-class TitlesSerializer(serializers.ModelSerializer):
-    genre = SlugSerializer(many=True, queryset=Genres.objects.all())
-    category = SlugSerializer(queryset=Category.objects.all())
+class TitleSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        slug_field='slug', queryset=Category.objects.all()
+    )
+    genre = serializers.SlugRelatedField(
+        many=True, slug_field='slug', queryset=Genre.objects.all()
+    )
 
     class Meta:
         fields = ('id', 'name', 'year', 'description', 'genre', 'category',)
         read_only_fields = ('id',)
-        model = Titles
-
-    def create(self, validated_data):
-        genres = validated_data.pop('genre')
-        current_category, status = Category.objects.get_or_create(
-            slug=validated_data['category']
-        )
-        validated_data['category'] = current_category
-        titles = Titles.objects.create(**validated_data)
-        genre_get_or_create(titles, genres)
-        return titles
-
-    def update(self, instance, validated_data):
-        genres = validated_data.get('genre', None)
-        if genres is not None:
-            genre_get_or_create(instance, genres)
-        category, status_category = Category.objects.get_or_create(
-            slug=validated_data.get('category'),
-        )
-        instance.name = validated_data.get('name', instance.name)
-        instance.year = validated_data.get('year', instance.year)
-        instance.description = validated_data.get(
-            'description', instance.description
-        )
-        instance.category = category
-        instance.save()
-        return instance
+        model = Title
 
 
 class TitlesListSerializer(serializers.ModelSerializer):
@@ -141,7 +99,7 @@ class TitlesListSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'description', 'genre', 'category', 'rating'
         )
         read_only_fields = ('id', 'rating',)
-        model = Titles
+        model = Title
 
 
 class ReviewSerializer(serializers.ModelSerializer):
