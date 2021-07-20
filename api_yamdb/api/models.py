@@ -7,16 +7,19 @@ from .validators import validate_year
 
 
 class User(AbstractUser):
-    USER_ROLES = [
-        ('user', 'user'),
-        ('admin', 'admin'),
-        ('moderator', 'moderator'),
+    USER = 'user'
+    ADMINISTRATOR = 'admin'
+    MODERATOR = 'moderator'
+    USER_ROLE_CHOICES = [
+        (USER, 'user'),
+        (ADMINISTRATOR, 'admin'),
+        (MODERATOR, 'moderator'),
     ]
     email = models.EmailField(max_length=255, unique=True)
     role = models.CharField(
         max_length=9,
-        choices=USER_ROLES,
-        default='user',
+        choices=USER_ROLE_CHOICES,
+        default=USER
     )
     bio = models.TextField(blank=True)
     USERNAME_FIELD = 'email'
@@ -27,6 +30,18 @@ class User(AbstractUser):
 
     def __str__(self):
         return f'{self.email}'
+
+    @property
+    def is_administrator(self):
+        if self.role == self.ADMINISTRATOR or self.is_superuser:
+            return True
+        return False        
+
+    @property
+    def is_moderator(self):
+        if self.role == self.MODERATOR:
+            return True
+        return False
 
 
 class UserRegistration(models.Model):

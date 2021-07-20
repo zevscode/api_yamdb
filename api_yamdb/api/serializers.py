@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -12,8 +13,20 @@ from .models import (
 
 User = get_user_model()
 
+class RoleField(serializers.ChoiceField):
+    def to_representation(self, value):
+        return self._choices[value]
+
+    def to_internal_value(self, data):
+        for key, value in self._choices.items():
+            if value == data:
+                return key
+        self.fail('invalid_choice', input=data)
+
 
 class UserSerializer(serializers.ModelSerializer):
+    role = RoleField(choices=User.USER_ROLE_CHOICES)
+
     class Meta:
         fields = (
             'username', 'email', 'role', 'first_name', 'last_name', 'bio',
@@ -35,7 +48,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         send_mail(
             'YaMDb Registration',
             f'Your Confirmation Code: {confirmation_code}',
-            'admin@yamdb.org',
+            settings.DEFAULT_FROM_EMAIL,
             (email,)
         )
 
@@ -46,8 +59,8 @@ class TokenObtainSerializer(serializers.Serializer):
     token = serializers.CharField(max_length=255, read_only=True)
 
     def validate(self, data):
-        email = data.get('email', None)
-        confirmation_code = data.get('confirmation_code', None)
+        email = data.get('email')
+        confirmation_code = data.get('confirmation_code')
         registration_record = get_object_or_404(
             UserRegistration, email=email
         )

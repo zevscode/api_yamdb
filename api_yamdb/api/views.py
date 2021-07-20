@@ -37,17 +37,15 @@ class UsersViewSet(viewsets.ModelViewSet):
             permission_classes=[IsAuthenticated],
             serializer_class=UserSerializer)
     def me(self, request):
-        user = get_object_or_404(User, username=request.user.username)
         if request.method == 'GET':
-            serializer = self.get_serializer(user)
+            serializer = self.get_serializer(request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         serializer = self.get_serializer(
-            user, data=request.data, partial=True
+            request.user, data=request.data, partial=True
         )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserRegistrationView(CreateAPIView):
@@ -56,10 +54,9 @@ class UserRegistrationView(CreateAPIView):
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class TokenObtainView(CreateAPIView):
@@ -68,9 +65,8 @@ class TokenObtainView(CreateAPIView):
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(CLDViewSet):
