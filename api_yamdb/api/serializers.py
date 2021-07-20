@@ -14,8 +14,20 @@ from .models import (
 
 User = get_user_model()
 
+class RoleField(serializers.ChoiceField):
+    def to_representation(self, value):
+        return self._choices[value]
+
+    def to_internal_value(self, data):
+        for key, value in self._choices.items():
+            if value == data:
+                return key
+        self.fail('invalid_choice', input=data)
+
 
 class UserSerializer(serializers.ModelSerializer):
+    role = RoleField(choices=User.USER_ROLE_CHOICES)
+
     class Meta:
         fields = (
             'username', 'email', 'role', 'first_name', 'last_name', 'bio',
