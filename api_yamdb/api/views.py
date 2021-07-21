@@ -93,7 +93,9 @@ class GenresViewSet(CLDViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    )
     lookup_url_kwarg = 'titles_id'
     permission_classes = (IsSuperUserOrReadOnly,)
     pagination_class = LimitOffsetPagination
@@ -104,10 +106,6 @@ class TitlesViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return TitlesListSerializer
         return TitleSerializer
-
-    def get_queryset(self):
-        return Title.objects.annotate(
-            rating=Avg('reviews__score'))
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
