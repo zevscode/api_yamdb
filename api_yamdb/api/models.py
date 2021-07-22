@@ -33,15 +33,11 @@ class User(AbstractUser):
 
     @property
     def is_administrator(self):
-        if self.role == self.ADMINISTRATOR or self.is_superuser:
-            return True
-        return False
+        return self.role == self.ADMINISTRATOR or self.is_superuser
 
     @property
     def is_moderator(self):
-        if self.role == self.MODERATOR:
-            return True
-        return False
+        return self.role == self.MODERATOR
 
 
 class UserRegistration(models.Model):
