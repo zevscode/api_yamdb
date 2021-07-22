@@ -130,8 +130,8 @@ class Review(models.Model):
         blank=True,
         null=True,
         validators=[
-            MaxValueValidator(10),
-            MinValueValidator(1)
+            MaxValueValidator(10, message='Рейтинг не должен быть выше 10'),
+            MinValueValidator(1, message='Рейтинг не должен быть ниже 1')
         ]
     )
 
